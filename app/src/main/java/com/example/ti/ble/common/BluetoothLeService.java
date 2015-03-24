@@ -14,7 +14,7 @@
   this software subject to the terms herein.  With respect to the foregoing patent
   license, such license is granted  solely to the extent that any such patent is necessary
   to Utilize the software alone.  The patent license shall not apply to any combinations which
-  include this software, other than combinations with devices manufactured by or for TI (ÒTI DevicesÓ). 
+  include this software, other than combinations with devices manufactured by or for TI (ï¿½TI Devicesï¿½). 
   No hardware patent is licensed hereunder.
 
   Redistributions must preserve existing copyright notices and reproduce this license (including the
@@ -42,9 +42,9 @@
 
   DISCLAIMER.
 
-  THIS SOFTWARE IS PROVIDED BY TI AND TIÕS LICENSORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
+  THIS SOFTWARE IS PROVIDED BY TI AND TIï¿½S LICENSORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
   BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-  IN NO EVENT SHALL TI AND TIÕS LICENSORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  IN NO EVENT SHALL TI AND TIï¿½S LICENSORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
   OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
@@ -69,6 +69,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
 // import android.util.Log;
 
@@ -131,6 +132,8 @@ public class BluetoothLeService extends Service {
 			} catch (NullPointerException e) {
 				e.printStackTrace();
 			}
+
+            Log.i(TAG,"BleS onConnectionStateChanged");
 		}
 
 		@Override
@@ -145,18 +148,21 @@ public class BluetoothLeService extends Service {
 		    BluetoothGattCharacteristic characteristic) {
 			broadcastUpdate(ACTION_DATA_NOTIFY, characteristic,
 			    BluetoothGatt.GATT_SUCCESS);
+            Log.i(TAG,"BleS onCharacteristicChanged");
 		}
 
 		@Override
 		public void onCharacteristicRead(BluetoothGatt gatt,
 		    BluetoothGattCharacteristic characteristic, int status) {
 			broadcastUpdate(ACTION_DATA_READ, characteristic, status);
+            Log.i(TAG,"BleS onCharacteristicRead");
 		}
 
 		@Override
 		public void onCharacteristicWrite(BluetoothGatt gatt,
 		    BluetoothGattCharacteristic characteristic, int status) {
 			broadcastUpdate(ACTION_DATA_WRITE, characteristic, status);
+            Log.i(TAG,"BleS onCharacteristicWrite");
 		}
 
 		@Override
@@ -194,16 +200,16 @@ public class BluetoothLeService extends Service {
 
 	private boolean checkGatt() {
 		if (mBtAdapter == null) {
-			// Log.w(TAG, "BluetoothAdapter not initialized");
+			 Log.w(TAG, "BluetoothAdapter not initialized");
 			return false;
 		}
 		if (mBluetoothGatt == null) {
-			// Log.w(TAG, "BluetoothGatt not initialized");
+			Log.w(TAG, "BluetoothGatt not initialized");
 			return false;
 		}
 
 		if (mBusy) {
-			// Log.w(TAG, "LeService busy");
+			 Log.w(TAG, "LeService busy");
 			return false;
 		}
 		return true;
@@ -221,7 +227,9 @@ public class BluetoothLeService extends Service {
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		return binder;
+		Log.w(TAG, "onBind");
+        return binder;
+
 	}
 
 	@Override
@@ -259,6 +267,8 @@ public class BluetoothLeService extends Service {
 			// Log.e(TAG, "Unable to obtain a BluetoothAdapter.");
 			return false;
 		}
+
+        Log.i(TAG, "Initialized BleService");
 		return true;
 	}
 
@@ -296,6 +306,7 @@ public class BluetoothLeService extends Service {
 			return;
 		mBusy = true;
 		mBluetoothGatt.readCharacteristic(characteristic);
+        Log.i(TAG,"BleS readCharacteristic");
 	}
 
 	public boolean writeCharacteristic(
@@ -308,6 +319,8 @@ public class BluetoothLeService extends Service {
 		characteristic.setValue(val);
 
 		mBusy = true;
+
+        Log.i(TAG,"BleS writeCharacteristic");
 		return mBluetoothGatt.writeCharacteristic(characteristic);
 	}
 
@@ -356,7 +369,7 @@ public class BluetoothLeService extends Service {
 	public List<BluetoothGattService> getSupportedGattServices() {
 		if (mBluetoothGatt == null)
 			return null;
-
+        Log.i(TAG,"BleS getSupportedGattServices");
 		return mBluetoothGatt.getServices();
 	}
 
@@ -401,6 +414,7 @@ public class BluetoothLeService extends Service {
 			}
 		}
 
+        Log.i(TAG,"BleS setCharacteristicNotification");
 		return ok;
 	}
 
@@ -464,6 +478,8 @@ public class BluetoothLeService extends Service {
 			// Log.w(TAG, "Attempt to connect in state: " + connectionState);
 			return false;
 		}
+
+        Log.i(TAG,"BleS connect ");
 		return true;
 	}
 
@@ -511,6 +527,8 @@ public class BluetoothLeService extends Service {
 			devList = mBluetoothManager.getConnectedDevices(BluetoothProfile.GATT);
 			n = devList.size();
 		}
+
+        Log.i(TAG,"BleS numConnectedDevice");
 		return n;
 	}
 
@@ -518,7 +536,11 @@ public class BluetoothLeService extends Service {
 	// Utility functions
 	//
 	public static BluetoothGatt getBtGatt() {
+
+        Log.i(TAG,"BleS getBtGatt");
 		return mThis.mBluetoothGatt;
+
+
 	}
 
 	public static BluetoothManager getBtManager() {
@@ -526,7 +548,9 @@ public class BluetoothLeService extends Service {
 	}
 
 	public static BluetoothLeService getInstance() {
-		return mThis;
+
+        Log.i(TAG,"BleS getInstance");
+        return mThis;
 	}
 
 	public boolean waitIdle(int timeout) {
